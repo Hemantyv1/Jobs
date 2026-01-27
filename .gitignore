@@ -1,0 +1,37 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Terraform
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+.terraform.lock.hcl
+tfplan
+*.tfplan
+
+# Build
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Docker
+postgres_data/
+
+# Documentation (local only)
+SECURITY*.md
+PROJECT_SUMMARY.md
+README-DEPLOY.md
+SECURITY-ACTIONS-COMPLETE.md
+
+# Scripts (local use only)
+scripts/

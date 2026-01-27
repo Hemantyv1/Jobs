@@ -1,0 +1,9 @@
+aws_region  = "us-east-1"
+alert_email = "your-email@example.com"
+db_password = "your-secure-db-password"
+
+# Optional: HTTPS setup (leave empty for HTTP only)
+# domain_name = "jobs.yourdomain.com"
+
+# Optional: CORS allowed origin (leave empty for same-origin only in production)
+# allowed_origin = "https://jobs.yourdomain.com"
