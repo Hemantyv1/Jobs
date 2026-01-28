@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const app = express();
@@ -17,7 +18,39 @@ if (isProd && (!ADMIN_PASSWORD || !COOKIE_SECRET)) {
 }
 
 function generateToken() {
-  return Buffer.from(`${Date.now()}-${Math.random()}`).toString('base64');
+  const issuedAt = Date.now().toString();
+  const hmac = crypto
+    .createHmac('sha256', COOKIE_SECRET)
+    .update(issuedAt)
+    .digest('hex');
+  return `${issuedAt}.${hmac}`;
+}
+
+function isValidToken(token) {
+  if (!COOKIE_SECRET || !token) return false;
+
+  const parts = token.split('.');
+  if (parts.length !== 2) {
+    return false;
+  }
+
+  const [issuedAt, signature] = parts;
+  if (!issuedAt || !signature) return false;
+
+  const expectedSignature = crypto
+    .createHmac('sha256', COOKIE_SECRET)
+    .update(issuedAt)
+    .digest('hex');
+
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(signature, 'utf8'),
+      Buffer.from(expectedSignature, 'utf8'),
+    );
+  } catch {
+    // timingSafeEqual throws if buffer lengths differ
+    return false;
+  }
 }
 
 const rateLimitMax = Math.max(1, parseInt(process.env.RATE_LIMIT_MAX || '10', 10));
@@ -78,11 +111,11 @@ function authenticate(req, res, next) {
   }
   
   const token = req.cookies[COOKIE_NAME];
-  
-  if (!token) {
+  if (!isValidToken(token)) {
+    res.clearCookie(COOKIE_NAME, { path: '/' });
     return res.status(401).json({ error: 'Authentication required' });
   }
-  
+
   next();
 }
 
